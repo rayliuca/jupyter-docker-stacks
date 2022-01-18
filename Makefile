@@ -4,7 +4,7 @@
 
 # Use bash for inline if-statements in arch_patch target
 SHELL:=bash
-OWNER?=jupyter
+OWNER?=rayliuca
 
 # Need to list the images in build dependency order
 
@@ -32,7 +32,11 @@ ALL_IMAGES:= \
 	datascience-notebook \
 	pyspark-notebook \
 	all-spark-notebook
-
+# rayliuca images
+RAYLIUCA_IMAGES:= \
+	base-notebook \
+	minimal-notebook \
+	scipy-notebook
 # Enable BuildKit for Docker build
 export DOCKER_BUILDKIT:=1
 
@@ -56,6 +60,15 @@ build/%: ## build the latest image for a stack using the system's architecture
 	@docker images $(OWNER)/$(notdir $@):latest --format "{{.Size}}"
 	@echo "::endgroup::"
 build-all: $(foreach I, $(ALL_IMAGES), build/$(I)) ## build all stacks
+
+build-ray/%: DOCKER_BUILD_ARGS?=
+build-ray/%: ## build the latest image for a stack using the system's architecture
+	@echo "::group::Build $(OWNER)/$(notdir $@) (system's architecture)"
+	docker build $(DOCKER_BUILD_ARGS) --rm --force-rm -t $(OWNER)/$(notdir $@)-nvidia-gpu:latest ./$(notdir $@) --build-arg OWNER=$(OWNER)
+	@echo -n "Built image size: "
+	@docker images $(OWNER)/$(notdir $@)-nvidia-gpu:latest --format "{{.Size}}"
+	@echo "::endgroup::"
+build-ray-all: $(foreach I, $(RAYLIUCA_IMAGES), build-ray/$(I)) ## build all stacks
 
 # Limitations on docker buildx build (using docker/buildx 0.5.1):
 #

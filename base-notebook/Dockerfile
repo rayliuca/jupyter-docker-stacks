@@ -3,8 +3,13 @@
 
 # Ubuntu 20.04 (focal)
 # https://hub.docker.com/_/ubuntu/?tab=tags&name=focal
-ARG ROOT_CONTAINER=ubuntu:focal
 
+ARG UBUNTU_VERSION=20.04
+
+ARG ARCH=
+ARG CUDA=11.2
+
+ARG ROOT_CONTAINER=nvidia/cuda${ARCH:+-$ARCH}:${CUDA}.1-base-ubuntu${UBUNTU_VERSION}
 FROM $ROOT_CONTAINER
 
 LABEL maintainer="Jupyter Project <jupyter@googlegroups.com>"
